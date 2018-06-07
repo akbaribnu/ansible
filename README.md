@@ -2,7 +2,7 @@
 
 ## Tutorial & Penjelasan Lengkap
 
-**[https://sekolahlinux.com/mengenal-dan-belajar-ansible-pada-linux/](https://sekolahlinux.com/mengenal-dan-belajar-ansible-pada-linux/)**
+* **[https://sekolahlinux.com/mengenal-dan-belajar-ansible-pada-linux/](https://sekolahlinux.com/mengenal-dan-belajar-ansible-pada-linux/)**
 
 ## Layout Ansible File
 ```
