@@ -1,0 +1,9 @@
+---
+- name: install web server nginx
+  hosts: nginx
+  become: yes
+  vars_files:
+    - vault_vars.yml 
+  roles:
+    - common
+    - web-server

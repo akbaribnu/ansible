@@ -1,0 +1,14 @@
+---
+- name: install nginx ubuntu
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  tags: install_nginx
+
+- name: change config nginx
+  template:
+    src: default.j2
+    dest: /etc/nginx/sites-available/default
+  tags: config_nginx
+  notify: "restart nginx"

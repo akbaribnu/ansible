@@ -1,0 +1,79 @@
+---
+- name: hostname set
+  hostname: name={{ inventory_hostname }}
+  tags: 'hostname'
+
+- name: generate /etc/hosts from inventory
+  lineinfile: 
+    dest: /etc/hosts 
+    line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname  }}" 
+    state: present
+  when: hostvars[item].inventory_hostname is defined
+  with_items: groups['nginx']
+
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: make sure we have a "sudo" group
+  group:
+    name: sudo
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+  when: ansible_os_family == "RedHat"
+
+- name: allow "sudo" group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: "^%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
+    validate: "visudo -cf %s"
+  when: ansible_os_family == "Debian"
+
+- name: adduser for redhat family
+  user:
+    name: "{{ item }}"
+    groups: wheel
+    shell: /bin/bash
+    append: yes
+  with_items:
+    - akbar
+    - alam
+    - abil
+  when: ansible_os_family == "RedHat"
+  tags: ["add_user"]
+
+- name: adduser for debian family
+  user:
+    name: "{{ item }}"
+    groups: sudo
+    shell: /bin/bash
+    append: yes
+  with_items:
+    - akbar
+    - alam
+    - abil
+  when: ansible_os_family == "Debian"
+  tags: ["add_user"]
+
+- name: set authorized key for user
+  authorized_key:
+    user: "{{ item.name }}"
+    state: present
+    key: "{{ item.pubkey }}"
+  with_items:
+    - {name: akbar, pubkey: ssh-rsa AAAAB3NzaC1yc2EBBAADAQABAAABAQCqbcDBdpmWc25lZtCTdUGJJY7t7DDgauFLarx3G0S1DqvaVeRSqo74GA5SPwSd8TVrY6Vf59KsLXe+BkzNSU2o1KWmV9YBXq1Vy/fRkj9uTm33iNtKbHzSO48atstPLOf+DjPKJY+65n7YmK4b0bl55vTuGg1WfOAyyfKqD2YPHXdI27aYB+0oieyxm+GGRHYvXv/dv9wpZ+z+BPFOcLaMYaWrfLprNltJ+9jWt/FPheWajACPzi8BRrF5egmSQPgWZvDqqXBGMcklp3NC5DepjF5D5CBBV/wlvbCTyRTxx+Vm1YCDi/4wjA/2rrAI2hF8FwFZAPp6xVz9p4ZXfY5X root@ubuntu}
+    - {name: alam, pubkey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCqbcDBdpmWc25lZtCTdUGJJY7t7DDgauFLarx3G0S1DqvaVeRSqo74GA5SPwSd8TVrY6Vf59KsLXe+BkzNSU2o1KWmV9YBXq1Vy/fRkj9uTm33iNtKbHzSO48atstPLOf+DjPKJY+65n7YmK4b0bl55vTuGg1WfOAyyfKqD2YPHXdI27aYB+0oieyxm+GGRHYvXv/dv9wpZ+z+BPFOcLaMYaWrfLprNltJ+9jWt/FPheWajACPzi8BRrF5egmSQPgWZvDqqXBGMcklp3NC5DepjF5D5CBBV/wlvbCTyRTxx+Vm1YCDi/4wjA/2rrAI2hF8FwFZAPp6xVz9p4ZXfY5X root@ubuntu}
+    - {name: abil, pubkey: ssh-rsa AAAAB3NzaC1yc2ECCAADAQABAAABAQCqbcDBdpmWc25lZtCTdUGJJY7t7DDgauFLarx3G0S1DqvaVeRSqo74GA5SPwSd8TVrY6Vf59KsLXe+BkzNSU2o1KWmV9YBXq1Vy/fRkj9uTm33iNtKbHzSO48atstPLOf+DjPKJY+65n7YmK4b0bl55vTuGg1WfOAyyfKqD2YPHXdI27aYB+0oieyxm+GGRHYvXv/dv9wpZ+z+BPFOcLaMYaWrfLprNltJ+9jWt/FPheWajACPzi8BRrF5egmSQPgWZvDqqXBGMcklp3NC5DepjF5D5CBBV/wlvbCTyRTxx+Vm1YCDi/4wjA/2rrAI2hF8FwFZAPp6xVz9p4ZXfY5X root@ubuntu}
+  tags: ["add_pubkey"]
