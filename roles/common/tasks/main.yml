@@ -4,12 +4,14 @@
   tags: 'hostname'
 
 - name: generate /etc/hosts from inventory
-  lineinfile: 
-    dest: /etc/hosts 
-    line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname  }}" 
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '.*{{ item }}$'
+    line: '{{ hostvars[item].ansible_host }}  {{ hostvars[item].inventory_hostname }}'
     state: present
   when: hostvars[item].inventory_hostname is defined
-  with_items: groups['nginx']
+  with_items: '{{ groups.nginx }}'
+  tags: 'hosts'
 
 - name: Make sure we have a 'wheel' group
   group:
